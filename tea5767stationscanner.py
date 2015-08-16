@@ -170,7 +170,7 @@ class tea5767:
      else:
        i=False
        print("Station skipped: ",self.freq , "FM (Weak Signal: ",level,")")
-     #time.sleep(0.1)
+     time.sleep(0.1)
    self.writeFrequency(self.freq ,0)
 
  def off(self):
