@@ -1,5 +1,5 @@
-######!/usr/bin/python3 
-######   # -*- coding: utf-8 -*-
+#!/usr/bin/python3 
+# -*- coding: utf-8 -*-
 
 import smbus as smbus 
 import subprocess
@@ -20,10 +20,10 @@ class tea5767:
    self.freq = 101.9
 
    print("FM Radio Module TEA5767")
+   self.getReady()
 
 
  def getFreq(self):
-# getReady()
    frequency = 0.0
    results = self.bus.transaction(
      reading(self.add, 5)
@@ -32,7 +32,6 @@ class tea5767:
    frequency = ((results[0][0]&0x3F) << 8) + results[0][1];
    # Determine the current frequency using the same high side formula as above
    frequency = round(frequency * 32768 / 4 - 225000) / 1000000;
-# print(frequency)
    return round(frequency,2)
 
 
@@ -76,20 +75,24 @@ class tea5767:
    #print("result search mode:" , results[0][0]+0x40)
    #s = results[0][3]+0x40
      sys.stdout.flush()
-     time.sleep(0.9)
+     time.sleep(0.1)
      print(".", end = "")
 #   print("Soft mute ", results[0][3]&0x08)
    #print(results[0][3]+0x40)
      i=standbyFlag*readyFlag
+     if(i==0):
+       self.i2c.read_byte(self.add)
      attempt+=1
-     if(attempt>10):
+     if(attempt>20):
        break
+     time.sleep(0.2)
+ 
    if(i==True):
      print("Ready! (",attempt,")")
 # print("Raw output ", results[0])
    else:
      self.i2c.read_byte(self.add)
-     print("Not ready!")
+     print("Not ready! (", attempt, ")")
 
  def writeFrequency(self,f, mute):
    freq =  f # desired frequency in MHz (at 101.1 popular music station in Melbourne) 
@@ -111,7 +114,7 @@ class tea5767:
    if(mute==0):
      data[1] = 0b10010000 # 3.byte (SUD; SSL1, SSL2; HLSI, MS, MR, ML; SWP1) 
    else:
-     data[1] = 0b00010110
+     data[1] = 0b00010110 #mute L & R during scanning
    data[2] =  0b00010010 # 4.byte (SWP2; STBY, BL; XTAL; smut; HCC, SNC, SI) 
    data[3] =  0b00000000 # 5.byte (PLREFF; DTC; 0; 0; 0; 0; 0; 0) 
 
@@ -139,43 +142,42 @@ class tea5767:
 
  def scan(self,direction):
    i=False
-   self.freq = self.getFreq()
    fadd = 0
    while (i==False):
      if(direction==1):
-       fadd+=0.05
+       fadd+=0.1
      else:
-       fadd-=0.05
-     self.freq = self.getFreq() #round((self.calculateFrequency()+self.getFreq())/2,2)
+       fadd-=0.1
+     #get current frequency, more accurately by averaging 2 method results
+     self.freq = round((self.calculateFrequency()+self.getFreq())/2,2)
      if(self.freq<87.5):
        self.freq=108
-     elif(self.freq>108):
+     elif(self.freq>107.9):
        self.freq=87.5
-     self.writeFrequency(self.freq+fadd,1) 
-     time.sleep(0.1)
+     self.writeFrequency(self.freq+fadd,1)
      results = self.bus.transaction(
        reading(self.add, 5)
      )
+     self.freq = round((self.calculateFrequency()+self.getFreq())/2,2) #read again
 
      readyFlag = 1 if (results[0][0]&0x80)==128 else 0
      level = results[0][3]>>4
      #print(results[0][0]&0x80 , " " , results[0][3]>>4)
-     if(readyFlag and level>9):
+     if(readyFlag and level>8):
        i=True
-       print("Frequency tuned: ",self.calculateFrequency(), "FM (Strong Signal: ",level,")")
+       print("Frequency tuned: ",self.freq , "FM (Strong Signal: ",level,")")
 
      else:
        i=False
-       print("Station skipped: ",self.calculateFrequency(), "FM (Weak Signal: ",level,")")
-
-   self.writeFrequency(self.calculateFrequency(),0)
+       print("Station skipped: ",self.freq , "FM (Weak Signal: ",level,")")
+     #time.sleep(0.1)
+   self.writeFrequency(self.freq ,0)
 
  def off(self):
    print("Radio off: Goodbye now!")
    self.writeFrequency(self.calculateFrequency(), 1) 
 
 radio = tea5767()
-radio.getReady()
 radio.scan(1)
 time.sleep(10)
 radio.scan(1)
