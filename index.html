@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+    function display(){
+        $.get("/info", function(data){
+            data = data["freq"] + "FM. Signal strength: " + data["level"]
+            console.log("Info " + data);
+            $("#display").html(data);
+        });
+    }
+    display();
+
+    $("#up").click(function(){
+	$("#display").html("Searching up the next available frequency")
+        $.get("/searchup", function(data){
+
+            console.log("Status:" + data);
+            if(data=="ok")
+              display();
+        });
+    });
+    $("#down").click(function(){
+        $("#display").html("Searching down the next available frequency");
+
+
+        $.get("/searchdown", function(data){
+
+            console.log("Status:" + data);
+            if(data=="ok")
+              display();
+        });
+    });
+
+    $("#off").click(function(){
+        $("#display").html("Off");
+
+        $.get("/off", function(data){
+
+            console.log("Status:" + data);
+            $("#display").html(data);
+
+        });
+    });
+
+});
+</script>
+</head>
+
+<body>
+<h1>Raspberry Pi 2 TEA5767 Radio Tuner</h1>
+<div id="display"></div>
+<button id="up">Tune Up</button>
+<button id="down">Tune Down</button>
+<button id="off">Turn off</button>
+
+</body>
+
+</html>

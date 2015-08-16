@@ -30,6 +30,7 @@ class tea5767:
    self.i2c = smbus.SMBus(1)
    self.bus = i2clib.I2CMaster()
    self.add = 0x60 # I2C address circuit 
+   self.signal = 0
 
    print("FM Radio Module TEA5767")
    #initiation
@@ -42,8 +43,9 @@ class tea5767:
    if self.freq < 87.5 or self.freq > 107.9:
      self.freq = 101.9
 
+   self.signal = self.getLevel()
 
-   print("Last frequency = " , self.freq, "FM")
+   print("Last frequency = " , self.freq, "FM. Signal level = ", self.signal)
    self.writeFrequency(self.freq, 0, 0)
 
 
@@ -57,6 +59,16 @@ class tea5767:
    # Determine the current frequency using the same high side formula as above
    frequency = round(frequency * 32768 / 4 - 225000) / 1000000;
    return frequency
+ 
+ def getLevel(self):
+   level = 0
+   results = self.bus.transaction(
+     reading(self.add, 5)
+   )
+   level = results[0][3]>>4
+
+   return level
+
 
 
  def calculateFrequency(self):
@@ -188,16 +200,16 @@ class tea5767:
      self.freq = round((self.calculateFrequency()+self.getFreq())/2,2) #read again
 
      readyFlag = 1 if (results[0][0]&0x80)==128 else 0
-     level = results[0][3]>>4
+     self.signal = results[0][3]>>4
      #print(results[0][0]&0x80 , " " , results[0][3]>>4)
 
      #tune into station that has strong signal only
-     if(readyFlag and level>9):
+     if(readyFlag and self.signal>9):
        i=True
-       print("Frequency tuned: ",self.freq , "FM (Strong Signal: ",level,")")
+       print("Frequency tuned: ",self.freq , "FM (Strong Signal: ",self.signal,")")
      else:
        i=False
-       print("Station skipped: ",self.freq , "FM (Weak Signal: ",level,")")
+       print("Station skipped: ",self.freq , "FM (Weak Signal: ",self.signal,")")
      #time.sleep(0.1)
    self.writeFrequency(self.freq ,0,direction)
 
@@ -216,6 +228,12 @@ class tea5767:
    print("Listening for 10 seconds")
    time.sleep(10)
    print("done")
+  
+ def info(self):
+   data ={}
+   data['freq'] = str(self.freq)
+   data['level'] = str(self.signal)
+   return data  
 #sample usage below:
 #radio = tea5767()
 #radio.scan(1)
