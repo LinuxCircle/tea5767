@@ -1,3 +1,10 @@
+"""
+Programmer	: Dipto Pratyaksa for www.LinuxCircle.com
+Dependencies	: tea5767stationscanner.py, index.html
+Original source	: http://www.svesoftware.com/documents/radio_server.py
+Last update	: 17 August 2015 - Indonesia's independence day
+"""
+
 import sys
 import http
 from http import server
