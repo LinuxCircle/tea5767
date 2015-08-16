@@ -28,10 +28,21 @@ class tea5767:
    self.i2c = smbus.SMBus(1)
    self.bus = i2clib.I2CMaster()
    self.add = 0x60 # I2C address circuit 
-   self.freq = 101.9
 
    print("FM Radio Module TEA5767")
-   self.getReady()
+   #initiation
+   if(not self.getReady()):
+     print("resetting to default")
+     self.i2c.write_byte(self.add, 0x00)
+     self.getReady()
+
+   self.freq = self.calculateFrequency()                         
+   if self.freq < 87.5 or self.freq > 107.9:
+     self.freq = 101.9
+
+
+   print("Last frequency = " , self.freq, "FM")
+   self.writeFrequency(self.freq, 0, 0)
 
 
  def getFreq(self):
@@ -87,8 +98,11 @@ class tea5767:
      time.sleep(0.1)
      print(".", end = "")
      i=standbyFlag*readyFlag
-     if(i==0):
-       self.i2c.read_byte(self.add)
+     #if(i==0):
+     #  try:
+     #   self.i2c.write_byte(self.add,0x00)
+     #  except:
+     #   i=i
      attempt+=1
      if(attempt>20):
        break
@@ -96,14 +110,16 @@ class tea5767:
  
    if(i==True):
      print("Ready! (",attempt,")")
+     return True
 # print("Raw output ", results[0])
    else:
      self.i2c.read_byte(self.add)
      print("Not ready! (", attempt, ")")
+     return False
 
  def writeFrequency(self,f, mute, direction):
    freq =  f # desired frequency in MHz (at 101.1 popular music station in Melbourne) 
-   cof = 32768
+   #cof = 32768
    i=False
    attempt = 0
    # Frequency distribution for two bytes (according to the data sheet) 
@@ -187,14 +203,26 @@ class tea5767:
    print("Radio off: Goodbye now!")
    self.writeFrequency(self.calculateFrequency(), 1,0) 
 
-radio = tea5767()
-radio.scan(1)
-time.sleep(15)
-radio.scan(1)
-time.sleep(15)
-radio.scan(0)
-time.sleep(15)
-radio.scan(0)
-time.sleep(15)
-radio.off()
+ def test(self):
+   print("Testing mode")
+   print("Scanning up...")
+   self.scan(1)
+   print("Listening for 10 seconds")
+   time.sleep(10)
+   print("Scanning down...")
+   self.scan(0)
+   print("Listening for 10 seconds")
+   time.sleep(10)
+   print("done")
+#sample usage below:
+#radio = tea5767()
+#radio.scan(1)
+#time.sleep(15)
+#radio.scan(1)
+#time.sleep(15)
+#radio.scan(0)
+#time.sleep(15)
+#radio.scan(0)
+#time.sleep(15)
+#radio.off()
 
