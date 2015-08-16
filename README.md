@@ -1,9 +1,17 @@
-Raspberry Pi FM receiver using Python 3 I2C and Tea5767
+<b>Raspberry Pi FM receiver using Python 3 I2C and Tea5767</b>
 
 Contributor: Dipto Pratyaksa
 <a href="http://www.linuxcircle.com">LinuxCircle.com</a>
 
-run tea5767stationscanner.py with Pytnon 3 this way:
+Description:
+
+This is a simple TEA5767 driver to tune into a local radio station
+with Raspberry Pi 2.
+
+
+Running Instruction:
+
+run tea5767stationscanner.py with Phyton 3 this way:
 sudo python3 tea5767stationscanner.py
 
 or if you prefer bash command:
