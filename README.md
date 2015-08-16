@@ -30,3 +30,10 @@ sudo python3 tea5767controller.py
 
 or with sufficient permission and executable file:
 sudo ./tea5767controller.py
+
+17 August 2015 update
+Added web interface.
+Run it with: sudo python3 radio_server.py
+Open browser from a client computer: http://IPADDRESSOFYOURPI:10005
+Example: http:/192.168.1.2:10005
+
