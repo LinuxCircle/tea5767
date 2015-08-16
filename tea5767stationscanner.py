@@ -94,7 +94,7 @@ class tea5767:
      self.i2c.read_byte(self.add)
      print("Not ready! (", attempt, ")")
 
- def writeFrequency(self,f, mute):
+ def writeFrequency(self,f, mute, direction):
    freq =  f # desired frequency in MHz (at 101.1 popular music station in Melbourne) 
    cof = 32768
    i=False
@@ -111,8 +111,10 @@ class tea5767:
    else:
      init = freqH&0x7F
    data[0] = freqL # 2.byte (frequency L) 
-   if(mute==0):
+   if(mute==0 and direction==1):
      data[1] = 0b10010000 # 3.byte (SUD; SSL1, SSL2; HLSI, MS, MR, ML; SWP1) 
+   elif(mute==0 and direction==0):
+     data[1] = 0b00010000
    else:
      data[1] = 0b00010110 #mute L & R during scanning
    data[2] =  0b00010010 # 4.byte (SWP2; STBY, BL; XTAL; smut; HCC, SNC, SI) 
@@ -145,16 +147,16 @@ class tea5767:
    fadd = 0
    while (i==False):
      if(direction==1):
-       fadd+=0.1
+       fadd=0.1
      else:
-       fadd-=0.1
+       fadd=-0.1
      #get current frequency, more accurately by averaging 2 method results
      self.freq = round((self.calculateFrequency()+self.getFreq())/2,2)
      if(self.freq<87.5):
        self.freq=108
      elif(self.freq>107.9):
        self.freq=87.5
-     self.writeFrequency(self.freq+fadd,1)
+     self.writeFrequency(self.freq+fadd,1,direction)
      results = self.bus.transaction(
        reading(self.add, 5)
      )
@@ -171,11 +173,11 @@ class tea5767:
        i=False
        print("Station skipped: ",self.freq , "FM (Weak Signal: ",level,")")
      time.sleep(0.1)
-   self.writeFrequency(self.freq ,0)
+   self.writeFrequency(self.freq ,0,direction)
 
  def off(self):
    print("Radio off: Goodbye now!")
-   self.writeFrequency(self.calculateFrequency(), 1) 
+   self.writeFrequency(self.calculateFrequency(), 1,0) 
 
 radio = tea5767()
 radio.scan(1)
