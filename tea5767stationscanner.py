@@ -1,16 +1,18 @@
 #!/usr/bin/python3 
 # -*- coding: utf-8 -*-
 
-"Programmer: Dipto Pratyaksa for LinuxCircle.com"
-"August 2015. Tech: Python 3, SMBUS, i2C, TEA5767 FM Radio, Raspberry Pi 2"
-"Project:Raspberry Pi Voice command robot via FM transmitter and receiver" 
-"Module: Tea 5767 Station Scanner"
-"Future wish list:"
-"- Save strong stations into text file list"
-"Reference:" 
-"https://raw.githubusercontent.com/JTechEng/tea5767/"
-"https://github.com/pcnate/fm-radio-python"
-"http://www.astromik.org/raspi/38.htm"
+"""
+Programmer: Dipto Pratyaksa for LinuxCircle.com
+August 2015. Tech: Python 3, SMBUS, i2C, TEA5767 FM Radio, Raspberry Pi 2
+Project:Raspberry Pi Voice command robot via FM transmitter and receiver 
+Module: Tea 5767 Station Scanner
+Future wish list:
+- Save strong stations into text file list
+Reference:
+https://raw.githubusercontent.com/JTechEng/tea5767/
+https://github.com/pcnate/fm-radio-python
+http://www.astromik.org/raspi/38.htm
+"""
 
 import smbus as smbus 
 import subprocess
