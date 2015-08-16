@@ -32,7 +32,7 @@ class tea5767:
    frequency = ((results[0][0]&0x3F) << 8) + results[0][1];
    # Determine the current frequency using the same high side formula as above
    frequency = round(frequency * 32768 / 4 - 225000) / 1000000;
-   return round(frequency,2)
+   return frequency
 
 
  def calculateFrequency(self):
@@ -46,8 +46,8 @@ class tea5767:
 
    uF = results[0][0]&0x3F
    lF = results[0][1]
- # this is probably not the best way of doing this but I was having issues with the
- #       frequency being off by as much as 1.5 MHz
+
+   #good formula
    current_freq = round((float(round(int(((int(uF)<<8)+int(lF))*cof/4-22500)/100000)/10)-.2)*10)/10
    return current_freq
 
@@ -72,13 +72,9 @@ class tea5767:
      readyFlag = 1 if (results[0][0]&0x80)==128 else 0
      standbyFlag = 1 if (results[0][3]+0x40)!=319 else 0
    
-   #print("result search mode:" , results[0][0]+0x40)
-   #s = results[0][3]+0x40
      sys.stdout.flush()
      time.sleep(0.1)
      print(".", end = "")
-#   print("Soft mute ", results[0][3]&0x08)
-   #print(results[0][3]+0x40)
      i=standbyFlag*readyFlag
      if(i==0):
        self.i2c.read_byte(self.add)
@@ -137,9 +133,6 @@ class tea5767:
 
      else:
        i = True
-   cf = self.calculateFrequency()  
-   gf = self.getFreq()
-   averageF =round((cf+gf)/2,2)
 
 
  def scan(self,direction):
@@ -157,6 +150,9 @@ class tea5767:
      elif(self.freq>107.9):
        self.freq=87.5
      self.writeFrequency(self.freq+fadd,1,direction)
+
+     #give time to finish writing, and then read status
+     time.sleep(0.1)
      results = self.bus.transaction(
        reading(self.add, 5)
      )
@@ -165,14 +161,15 @@ class tea5767:
      readyFlag = 1 if (results[0][0]&0x80)==128 else 0
      level = results[0][3]>>4
      #print(results[0][0]&0x80 , " " , results[0][3]>>4)
-     if(readyFlag and level>8):
+
+     #tune into station that has strong signal only
+     if(readyFlag and level>9):
        i=True
        print("Frequency tuned: ",self.freq , "FM (Strong Signal: ",level,")")
-
      else:
        i=False
        print("Station skipped: ",self.freq , "FM (Weak Signal: ",level,")")
-     time.sleep(0.1)
+     #time.sleep(0.1)
    self.writeFrequency(self.freq ,0,direction)
 
  def off(self):
@@ -181,12 +178,12 @@ class tea5767:
 
 radio = tea5767()
 radio.scan(1)
-time.sleep(10)
+time.sleep(15)
 radio.scan(1)
-time.sleep(10)
+time.sleep(15)
 radio.scan(0)
-time.sleep(10)
+time.sleep(15)
 radio.scan(0)
-time.sleep(10)
+time.sleep(15)
 radio.off()
 
