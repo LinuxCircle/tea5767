@@ -1,0 +1,141 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+try{
+var ws = new WebSocket("ws://192.168.1.2:8888/ws"); 
+
+//ws.send("mampus lu!");
+
+ ws.onmessage = function(evt) {
+//	alert("open" + evt);
+	$("#display").html("The beginning ");
+        getFreq(evt.data);
+};
+
+function getFreq(jsondata){
+        try{
+         var obj = jQuery.parseJSON(jsondata);
+         strength = obj.level/14*100
+         strength = strength.toFixed(2)
+         var desc = ""
+         if(obj.mute==0)
+            desc = obj.stereo;
+         else
+            desc = "muted";
+         data = obj.freq + "FM. Signal strength: " + strength + "% (" + desc + ")";
+         $("#display").html(data);
+        }catch(err){
+           $("#display").html(err.message);
+
+        }
+
+}
+
+
+ ws.onopen = function(evt) { 
+//	alert("open" + evt);
+	$("#display").html("Connection ready" + evt);
+        //ws.send("Connection ready");
+};
+
+}catch(exception){
+        $("#display").html(exception);
+	alert(exception);
+}
+
+
+
+function getStatus() {
+
+$.get('telek.txt', function(data) {
+//   alert(data);
+   //process text file line by line
+   $('#display').html(data.replace('n',''));
+});
+
+    setTimeout("getStatus()",1);
+
+}
+//getStatus();
+
+    $("#up").click(function(){
+	$("#display").html("Searching up the next available frequency");
+        ws.send("up");
+ 	ws.onmessage = function(evt) {
+//		alert("open" + evt.data);
+		$("#display").html("opening websocket" + evt.data);
+		getFreq(evt.data);
+
+
+	};
+
+
+ 
+            console.log("Status:" + data);
+
+            if(data=="ok"){
+              //display();
+
+	    }
+    });
+    $("#down").click(function(){
+        $("#display").html("Searching down the next available frequency");
+	ws.send("down");
+        ws.onmessage = function(evt) {
+//              alert("open" + evt.data);
+                $("#display").html("opening websocket" + evt.data);
+                getFreq(evt.data);
+
+
+        };
+
+
+    });
+
+    $("#off").click(function(){
+        $("#display").html("Turning off...");
+        ws.send("off");
+        ws.onmessage = function(evt) {
+//              alert("open" + evt.data);
+                $("#display").html("Status: " + evt.data);
+
+
+        };
+
+
+    });
+
+    $("#mute").click(function(){
+        $("#display").html("Muting...");
+        ws.send("mute");
+        ws.onmessage = function(evt) {
+          getFreq(evt.data);
+          var obj = jQuery.parseJSON(evt.data);
+          if(obj.mute)
+             $("#mute").text("Unmute");
+          else
+             $("#mute").text("Mute");
+
+        };
+        
+
+    });
+
+
+});
+</script>
+</head>
+
+<body>
+<h1>Raspberry Pi 2 TEA5767 Radio Tuner</h1>
+<div id="display"></div>
+<button id="up">Tune Up</button>
+<button id="down">Tune Down</button>
+<button id="mute">Mute</button>
+<button id="off">Turn off</button>
+
+</body>
+
+</html>

@@ -1,3 +1,7 @@
+#!/usr/bin/python3 
+# -*- coding: utf-8 -*-
+
+
 """
 Programmer	: Dipto Pratyaksa for www.LinuxCircle.com
 Dependencies	: tea5767stationscanner.py, index.html
@@ -13,15 +17,19 @@ import glob
 import time
 import datetime
 import tea5767stationscanner
-
+import websocket
+import socket
 import sys
+
 
 class MyRequestHandler(http.server.SimpleHTTPRequestHandler):
     
     tea = None
 
     def __init__(self, request, address, server):
-        self.tea = tea5767stationscanner.tea5767()
+        if(self.tea==None):
+             self.tea = rr
+        self.tea.on()
         http.server.SimpleHTTPRequestHandler.__init__(self, request, address, server)		
 
 
@@ -64,7 +72,8 @@ class MyRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         if self.path == '/info':
             resp = self.tea.info()
-            resp = "{" + '"freq":' + resp['freq'] + ',"level":' + resp['level']  + "}"
+            resp = "{" + '"freq":' + resp['freq'] + ',"level":' + resp['level']+',"stereo":\"'+resp['stereo']  + "\"}"
+            print(resp)
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.send_header("Content-length", len(resp))
@@ -75,7 +84,7 @@ class MyRequestHandler(http.server.SimpleHTTPRequestHandler):
         return http.server.SimpleHTTPRequestHandler.do_GET(self)
      
     
-      
+rr = tea5767stationscanner.tea5767()      
 HandlerClass = MyRequestHandler
 ServerClass  = http.server.HTTPServer
 Protocol     = "HTTP/1.0"
@@ -85,15 +94,24 @@ Protocol     = "HTTP/1.0"
 if sys.argv[1:]:
     port = int(sys.argv[1])
 else:
-    port = 10005
+    port = 8888
 server_address = ('0.0.0.0', port)
 
 HandlerClass.protocol_version = Protocol
 httpd = ServerClass(server_address, HandlerClass)
 
-sa = httpd.socket.getsockname()
-print ("Serving HTTP on ", sa[0], "port", sa[1])
-httpd.serve_forever()
+WS_PORT = 9876
+#ws = websocket.Websocket(WS_PORT, driver)
+#Thread(target=ws.serve_forever, args=(stop,)).start()
+
+
+try:
+ sa = httpd.socket.getsockname()
+ print ("Serving HTTP on ", sa[0], "port", sa[1])
+ httpd.serve_forever()
+except:
+ print("Program finished")
+ rr.off()
 
 
 

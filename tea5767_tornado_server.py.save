@@ -1,0 +1,61 @@
+import tornado.httpserver
+import tornado.websocket
+import tornado.ioloop
+import tornado.web
+
+import tea5767stationscanner
+
+
+class IndexHandler(tornado.web.RequestHandler):
+ @tornado.web.asynchronous
+ def get(self):
+  self.render("tea5767_tornado.html")
+
+class WSHandler(tornado.websocket.WebSocketHandler):
+
+ controller = None
+ def check_origin(self, origin):
+  return True
+
+ def open(self):
+  print ("connecting...")
+  try:
+   #self.controller = DeviceController()
+   self.write_message("Hello world!")
+   self.controller=tea5767stationscanner.tea5767()
+
+#   self.controller.prepareSocket()
+  except Exception as a:
+   print(a)
+
+ def on_message(self, message):
+  print("Command:", message)
+  data=""
+  try:
+
+   if(message=="up"):
+    self.controller.scan(1)
+    #print()
+   elif(data=="down"):
+    data="data"
+#    data = self.controller.move_down()
+
+   self.write_message(data)
+  except Exception as a:
+   print("Error: ", a)
+
+ def on_close(self):
+  print ("closing sockets")
+  self.controller =""
+
+application = tornado.web.Application([
+ (r'/', IndexHandler),
+ (r"/ws", WSHandler),
+])
+
+
+if __name__ == "__main__":
+ http_server = tornado.httpserver.HTTPServer(application)
+ print ("Waiting client connection via browser port 8888")
+ http_server.listen(8888)
+ tornado.ioloop.IOLoop.instance().start()
