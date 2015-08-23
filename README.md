@@ -8,6 +8,7 @@ Description:
 This is a simple TEA5767 driver to tune into a local radio station
 with Raspberry Pi 2.
 
+<img src="tea5767.png" />
 
 Running Instruction:
 
