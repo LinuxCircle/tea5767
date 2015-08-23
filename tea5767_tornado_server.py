@@ -36,19 +36,17 @@ class WSHandler(tornado.websocket.WebSocketHandler):
   try:
 
    if(message=="up"):
-#    self.controller.prepareSocket()
     self.controller.scan(1)
-    data=self.controller.info()
-
    elif(message=="down"):
     self.controller.scan(0)
-    data=self.controller.info()
-
    elif(message=="off"):
     data=self.controller.off()
    elif(message=="mute"):
     data=self.controller.mute()
-    data=self.controller.info()
+   data=self.controller.info()
+   
+   if(message=="off"):
+    data=self.controller.off()
     
    self.write_message(data)
   except Exception as a:
@@ -58,7 +56,14 @@ class WSHandler(tornado.websocket.WebSocketHandler):
   print ("closing sockets")
   self.controller =""
 
+
+static_path = "/home/pi/Projects/tea5767/"
+favicon_path =""
+
 application = tornado.web.Application([
+ (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': favicon_path}),
+ (r"/images/(.*)",tornado.web.StaticFileHandler, {"path": "./images"},),
+ (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
  (r'/', IndexHandler),
  (r"/ws", WSHandler),
 ])

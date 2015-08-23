@@ -200,6 +200,8 @@ class tea5767:
    freqH = freq14bit >>8
    freqL = freq14bit & 0xFF
 
+   self.muteFlag = mute
+
    data = [0 for i in range(4)]
    # Descriptions of individual bits in a byte - viz.  catalog sheets 
    if(mute==0): 
@@ -300,11 +302,9 @@ class tea5767:
  def mute(self):
    if(self.muteFlag):
      self.writeFrequency(self.calculateFrequency(), 0,0)
-     self.muteFlag = 0
      print("unmute")
    else:
      self.writeFrequency(self.calculateFrequency(), 1,0)
-     self.muteFlag = 1
      print("mute")
    return ("radio muted")
 
@@ -324,7 +324,7 @@ class tea5767:
  def info(self):
    data ={}
    data['freq'] = str(self.freq)
-   data['level'] = str(self.signal)
+   data['level'] = self.signal
    data['stereo'] = str(self.stereoFlag)
    data['tuned'] = self.readyFlag
    data['mute'] = self.muteFlag
